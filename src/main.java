@@ -18,11 +18,15 @@ public class main {
     private int WIDTH  = 1270;
     private int HEIGHT = 720;
 
+    private static Game game;
+
     public void run() {
         System.out.println("Hello LWJGL " + Version.getVersion() + "!");
 
         initDisplay();
         init_GL();
+
+        init_Game();
         loop();
 
         // Free the window callbacks and destroy the window
@@ -111,17 +115,38 @@ public class main {
         // Run the rendering loop until the user has attempted to close
         // the window or has pressed the ESCAPE key.
         while ( !glfwWindowShouldClose(window) ) {
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the framebuffer
-
-            glColor3f(0.0f, 0.0f, 1.0f);
-            drawRect(200, 200, 224, 32);
+            get_Input();
+            update();
+            render();
 
             glfwSwapBuffers(window); // swap the color buffers
-
             // Poll for window events. The key callback above will only be
             // invoked during this call.
             glfwPollEvents();
         }
+    }
+
+    private static void init_Game()
+    {
+        game = new Game();
+    }
+
+    private static void get_Input()
+    {
+        game.get_Input();
+    }
+
+    private static void update()
+    {
+        game.update();
+    }
+
+    private static void render()
+    {
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the framebuffer
+        glLoadIdentity();
+
+        game.render();
     }
 
     private static void drawRect(float x, float y, float width, float height){
