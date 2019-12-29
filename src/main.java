@@ -14,11 +14,12 @@ import static org.lwjgl.system.MemoryUtil.*;
 public class main {
 
     // The window handle
-    private long window;
+    protected static long window;
     private int WIDTH  = 1270;
     private int HEIGHT = 720;
 
     private static Game game;
+    private GLFWKeyCallback keyCallback;
 
     public void run() {
         System.out.println("Hello LWJGL " + Version.getVersion() + "!");
@@ -58,10 +59,12 @@ public class main {
             throw new RuntimeException("Failed to create the GLFW window");
 
         // Setup a key callback. It will be called every time a key is pressed, repeated or released.
-        glfwSetKeyCallback(window, (window, key, scancode, action, mods) -> {
-            if ( key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE )
-                glfwSetWindowShouldClose(window, true); // We will detect this in the rendering loop
-        });
+//        glfwSetKeyCallback(window, (window, key, scancode, action, mods) -> {
+//            if ( key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE )
+//                glfwSetWindowShouldClose(window, true); // We will detect this in the rendering loop
+//        });
+
+        glfwSetKeyCallback(window, new Input());
 
         // Get the thread stack and push a new frame
         try ( MemoryStack stack = stackPush() ) {
@@ -104,25 +107,47 @@ public class main {
         glOrtho(0, 480, 0, 320, -1, 1);
         glMatrixMode(GL_MODELVIEW);
 
-        glClearColor(0,0,0,1);
+        glClearColor(1,1,1,1);
 
         glDisable(GL_DEPTH_TEST);
     }
 
     private void loop() {
-        // Set the clear color
+        int frames = 0;
+        double unprocessedSeconds = 0;
+        long previousTime = System.nanoTime();
+        double secondsPerTick = 1 / 60.0;
+        int TickCount = 0;
+        boolean ticked = false;
 
         // Run the rendering loop until the user has attempted to close
         // the window or has pressed the ESCAPE key.
         while ( !glfwWindowShouldClose(window) ) {
+            long currentTime = System.nanoTime();
+            long passedTime = currentTime - previousTime;
+            previousTime = currentTime;
+
+            unprocessedSeconds += passedTime / 1000000000.0;
+            while(unprocessedSeconds > secondsPerTick){
+                unprocessedSeconds -= secondsPerTick;
+                ticked = true;
+                TickCount++;
+                if(TickCount % 60 == 0){
+                    System.out.println(frames + "fps");
+                    previousTime += 1000;
+                    frames = 0;
+                }
+            }
+            if (ticked){
+                get_Input();
+                update();
+                render();
+                frames++;
+            }
             get_Input();
             update();
             render();
-
-            glfwSwapBuffers(window); // swap the color buffers
-            // Poll for window events. The key callback above will only be
-            // invoked during this call.
-            glfwPollEvents();
+            frames++;
         }
     }
 
@@ -139,6 +164,10 @@ public class main {
     private static void update()
     {
         game.update();
+
+        // Poll for window events. The key callback above will only be
+        // invoked during this call.
+        glfwPollEvents();
     }
 
     private static void render()
@@ -147,27 +176,8 @@ public class main {
         glLoadIdentity();
 
         game.render();
-    }
 
-    private static void drawRect(float x, float y, float width, float height){
-        drawRect(x, y, width, height, 0);
-    }
-
-    private static void drawRect(float x, float y, float width, float height, float rot){
-        glPushMatrix();
-        {
-            glTranslatef(x, y, 0);
-            glRotatef(rot, 0 ,0 ,1);
-            glBegin(GL_QUADS);
-            {
-                glVertex2f(0, 0);
-                glVertex2f(0, height);
-                glVertex2f(width, height);
-                glVertex2f(width, 0);
-            }
-            glEnd();
-        }
-        glPopMatrix();
+        glfwSwapBuffers(window); // swap the color buffers
     }
 
     public static void main(String[] args) {
