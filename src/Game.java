@@ -1,32 +1,37 @@
-import org.lwjgl.glfw.GLFWVidMode;
-import org.lwjgl.system.MemoryStack;
-import sun.applet.Main;
-
-import java.nio.IntBuffer;
 import java.util.ArrayList;
 
 import static org.lwjgl.glfw.GLFW.*;
-import static org.lwjgl.system.MemoryStack.stackPush;
 
 public class Game {
 
     private ArrayList<GameObject> gameObjects;
-    private main mainn;
+
     private int window_width;
     private int window_height;
+    private GameObjectBALL ball;
+    private GameObjectPlayer player;
 
-    public Game()
-    {
+    public Game(){}
+
+    // get window widht and height from the main class
+    public Game(int WINDOW_WIDTH, int WINDOW_HEIGHT){
+
         gameObjects = new ArrayList<GameObject>();
-        mainn = new main();
-        getting_window_width_and_height();
+        window_width = WINDOW_WIDTH;
+        window_height = WINDOW_HEIGHT;
 
+        // creating the game object ball
+        ball = new GameObjectBALL(window_width / 2 - GameObjectBALL.SIZE / 2, window_height / 2 - GameObjectBALL.SIZE / 2);
+        // creating the game object player
+        player = new GameObjectPlayer(0, window_height / 2 - GameObjectPlayer.SIZEY / 2);
+
+        gameObjects.add(ball);
+        gameObjects.add(player);
     }
 
     public void get_Input(){
         if (Input.keys[GLFW_KEY_SPACE]){
-            System.out.println(window_width);
-            System.out.println(window_height);
+
         }
     }
 
@@ -42,19 +47,5 @@ public class Game {
         for(GameObject go : gameObjects){
             go.render();
         }
-    }
-
-    private void getting_window_width_and_height() {
-        // Get the thread stack and push a new frame
-        try ( MemoryStack stack = stackPush() ) {
-            IntBuffer pWidth = stack.mallocInt(1); // int*
-            IntBuffer pHeight = stack.mallocInt(1); // int*
-            // Get the window size passed to glfwCreateWindow
-            glfwGetWindowSize(main.window, pWidth, pHeight);
-
-            window_width = pWidth.get(0);
-            window_height = pHeight.get(0);
-
-        } // the stack frame is popped automatically
     }
 }

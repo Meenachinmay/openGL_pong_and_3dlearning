@@ -14,7 +14,7 @@ import static org.lwjgl.system.MemoryUtil.*;
 public class main {
 
     // The window handle
-    protected static long window;
+    private static long window;
     private int WIDTH  = 1270;
     private int HEIGHT = 720;
 
@@ -104,10 +104,10 @@ public class main {
 
         glMatrixMode(GL_PROJECTION);
         glLoadIdentity();
-        glOrtho(0, 480, 0, 320, -1, 1);
+        glOrtho(0, WIDTH, 0, HEIGHT, -1, 1);
         glMatrixMode(GL_MODELVIEW);
 
-        glClearColor(1,1,1,1);
+        glClearColor(0,0,0,1);
 
         glDisable(GL_DEPTH_TEST);
     }
@@ -148,12 +148,18 @@ public class main {
             update();
             render();
             frames++;
+
+            glfwSwapBuffers(window); // swap the color buffers
+
+            // Poll for window events. The key callback above will only be
+            // invoked during this call.
+            glfwPollEvents();
         }
     }
 
-    private static void init_Game()
+    private void init_Game()
     {
-        game = new Game();
+        game = new Game(WIDTH, HEIGHT);
     }
 
     private static void get_Input()
@@ -164,10 +170,6 @@ public class main {
     private static void update()
     {
         game.update();
-
-        // Poll for window events. The key callback above will only be
-        // invoked during this call.
-        glfwPollEvents();
     }
 
     private static void render()
@@ -176,8 +178,6 @@ public class main {
         glLoadIdentity();
 
         game.render();
-
-        glfwSwapBuffers(window); // swap the color buffers
     }
 
     public static void main(String[] args) {
